@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
       if (isNumber(chopped)) {
         int *conversion = decimalToBinary(strtol(chopped, NULL, 10));
 
-        fprintf(output, "%s -> ", line);
+        // fprintf(output, "%s -> ", line);
         fprintf(output, "%d", 0);
         for (int i = 0; i < (15); i++) {
           fprintf(output, "%d", conversion[i]);
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
             found = 1;
             int *conversion = decimalToBinary(symbolValue[i]);
 
-            fprintf(output, "%s -> ", line);
+            // fprintf(output, "%s -> ", line);
             fprintf(output, "%d", 0);
             for (int i = 0; i < 15; i++) {
               fprintf(output, "%d", conversion[i]);
@@ -123,6 +123,15 @@ int main(int argc, char **argv) {
           symbolValue[curretSymbolIndex] = variableValue;
           // printf("%s:%d\n", symbolKeys[curretSymbolIndex],
           //        symbolValue[curretSymbolIndex]);
+          int *conversion = decimalToBinary(variableValue);
+
+          // fprintf(output, "%s -> ", line);
+          fprintf(output, "%d", 0);
+          for (int i = 0; i < 15; i++) {
+            fprintf(output, "%d", conversion[i]);
+          }
+          fprintf(output, "\n");
+          free(conversion);
           curretSymbolIndex++;
           variableValue++;
         }
@@ -135,18 +144,29 @@ int main(int argc, char **argv) {
       int *destBin = traduzirDest(dest);
       int *jmpBin = traduzirJmp(jmp);
       char *cOutput = malloc(13 * sizeof(char));
-      fprintf(output, "%s -> ", line);
+      // fprintf(output, "%s -> ", line);
       fprintf(output, "111");
+      // fprintf(output, "\n");
+      // fprintf(output, "Comp-> %s:", comp);
       for (int i = 0; i < 7; i++) {
         fprintf(output, "%d", compBin[i]);
       }
+      // fprintf(output, "\n");
+      // fprintf(output, "Dest-> %s:", dest);
       for (int i = 0; i < 3; i++) {
         fprintf(output, "%d", destBin[i]);
       }
+      // fprintf(output, "\n");
+      // fprintf(output, "Jmp-> %s:", jmp);
       for (int i = 0; i < 3; i++) {
         fprintf(output, "%d", jmpBin[i]);
       }
       fprintf(output, "\n");
+      free(comp);
+      free(dest);
+      free(compBin);
+      free(destBin);
+      free(jmpBin);
     }
     // for (int i = 0; symbolKeys[i] != NULL; i++) {
     //   printf("%s:%d\n", symbolKeys[i], symbolValue[i]);
@@ -178,7 +198,7 @@ void trim(char *s) {
 }
 
 int *decimalToBinary(int num) {
-  int *binary = malloc(sizeof(int) * 15);
+  int *binary = calloc(15, sizeof(int));
   // assuming 14-bit integer
   int loop = 0;
   for (int i = 14; i >= 0; i--) {
@@ -210,19 +230,21 @@ int isNumber(char *number) {
 }
 
 char *separarDest(char *linha) {
-  char *output = malloc(3 * sizeof(char));
-  for (int i = 0; linha[i] != '\0'; i++) {
-    if (linha[i] == '=' || linha[i] == ';' || linha[i] == '\0') {
-      output[i] = '\0';
-      break;
+  char *output = calloc(4, sizeof(char));
+  if (strstr(linha, "=") != NULL) {
+    for (int i = 0; linha[i] != '\0'; i++) {
+      if (linha[i] == '=') {
+        output[i] = '\0';
+        break;
+      }
+      output[i] = linha[i];
     }
-    output[i] = linha[i];
   }
   return output;
 }
 
 int *traduzirDest(char *dest) {
-  int *output = malloc(3 * sizeof(int));
+  int *output = calloc(3, sizeof(int));
   if (dest != NULL) {
     for (int i = 0; i < sizeof(dest); i++) {
       if (dest[i] == 'M') {
@@ -244,7 +266,7 @@ int *traduzirDest(char *dest) {
 }
 
 char *separarComp(char *linha) {
-  char *output = malloc(4 * sizeof(char));
+  char *output = calloc(4, sizeof(char));
   int inicio = 0;
   int final = 0;
   int counter = 0;
@@ -257,22 +279,25 @@ char *separarComp(char *linha) {
       break;
     }
   }
-  if (inicio == 0) {
-    return NULL;
-  } else {
-    for (int x = inicio; linha[x] != '\0'; x++) {
-      output[counter] = linha[x];
-      if (x == final) {
-        output[counter] = '\0';
-      }
-      counter++;
+  for (int x = inicio; x <= strlen(linha); x++) {
+    output[counter] = linha[x];
+    if (x == final) {
+      output[counter] = '\0';
+      break;
     }
-    return output;
+    counter++;
   }
+  return output;
 }
 
 int *traduzirComp(char *comp) {
-  int *output = malloc(7 * sizeof(int));
+  int *output = calloc(7, sizeof(int));
+  // printf("Comp:%s\n", comp);
+  // printf("Trad:");
+  // for (int i = 0; i < 7; i++) {
+  //   printf("%d", output[i]);
+  // }
+  // printf("\n");
   if (comp != NULL) {
     if (strstr(comp, "M") != NULL) {
       output[0] = 1;
@@ -406,12 +431,10 @@ int *traduzirComp(char *comp) {
     }
   }
 
-  // printf("Comp:%s\n", comp);
-  // printf("Trad:");
   // for (int i = 0; i < 7; i++) {
   //   printf("%d", output[i]);
   // }
-  // printf("\n");
+  // printf("\n-----------------------------\n");
   return output;
 }
 
@@ -425,7 +448,7 @@ char *separarJmp(char *linha) {
 }
 
 int *traduzirJmp(char *jmp) {
-  int *output = malloc(3 * sizeof(int));
+  int *output = calloc(3, sizeof(int));
   if (jmp != NULL) {
     if (jmp[2] == 'E' || jmp[1] == 'E') {
       output[1] = 1;
